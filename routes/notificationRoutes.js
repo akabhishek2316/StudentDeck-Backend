@@ -47,6 +47,55 @@ router.get("/", protect, async (req, res) => {
 });
 
 /*
+ * DELETE ONE NOTIFICATION
+ * Current user can delete only their own notification
+ */
+router.delete(
+    "/:notificationId",
+    protect,
+    async (req, res) => {
+        try {
+            const notification =
+                await Notification.findOneAndDelete({
+                    _id: req.params.notificationId,
+                    recipient: req.user._id
+                });
+
+            if (!notification) {
+                return res.status(404).json({
+                    message:
+                        "Notification not found"
+                });
+            }
+
+            const unreadCount =
+                await Notification.countDocuments({
+                    recipient: req.user._id,
+                    read: false
+                });
+
+            return res.status(200).json({
+                message:
+                    "Notification deleted",
+                deletedId:
+                    notification._id,
+                unreadCount
+            });
+        } catch (error) {
+            console.error(
+                "Delete notification error:",
+                error.message
+            );
+
+            return res.status(500).json({
+                message:
+                    "Server error while deleting notification"
+            });
+        }
+    }
+);
+
+/*
  * MARK ONE NOTIFICATION AS READ
  */
 /*

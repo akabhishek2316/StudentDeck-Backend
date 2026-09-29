@@ -140,11 +140,16 @@ const getResources = async (req, res) => {
     try {
         const resources =
             await AcademicResource.find()
+                .select(
+                    "-fileUrl -filePublicId -fileResourceType"
+                )
                 .populate(
                     "uploadedBy",
                     "name email profileImage department year"
                 )
-                .sort({ createdAt: -1 });
+                .sort({
+                    createdAt: -1
+                });
 
         return res.status(200).json({
             resources
@@ -167,10 +172,14 @@ const getResourceById = async (req, res) => {
         const resource =
             await AcademicResource.findById(
                 req.params.id
-            ).populate(
-                "uploadedBy",
-                "name email profileImage department year"
-            );
+            )
+                .select(
+                    "-fileUrl -filePublicId -fileResourceType"
+                )
+                .populate(
+                    "uploadedBy",
+                    "name email profileImage department year"
+                );
 
         if (!resource) {
             return res.status(404).json({
@@ -191,6 +200,49 @@ const getResourceById = async (req, res) => {
         return res.status(500).json({
             message:
                 "Server error while fetching academic resource"
+        });
+    }
+};
+
+
+const getResourceFile = async (req, res) => {
+    try {
+        const resource =
+            await AcademicResource.findById(
+                req.params.id
+            ).select(
+                "fileUrl fileResourceType title"
+            );
+
+        if (!resource) {
+            return res.status(404).json({
+                message:
+                    "Academic resource not found"
+            });
+        }
+
+        if (!resource.fileUrl) {
+            return res.status(404).json({
+                message:
+                    "Resource file is unavailable"
+            });
+        }
+
+        return res.status(200).json({
+            fileUrl: resource.fileUrl,
+            resourceType:
+                resource.fileResourceType || "raw",
+            title: resource.title
+        });
+    } catch (error) {
+        console.error(
+            "Get academic resource file error:",
+            error.message
+        );
+
+        return res.status(500).json({
+            message:
+                "Server error while accessing resource file"
         });
     }
 };
@@ -422,6 +474,7 @@ module.exports = {
     createResource,
     getResources,
     getResourceById,
+    getResourceFile,
     updateResource,
     deleteResource
 };
