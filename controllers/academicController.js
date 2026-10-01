@@ -1,6 +1,6 @@
 const AcademicResource = require("../models/AcademicResource");
 const cloudinary = require("../config/cloudinary");
-const {createNotificationForAllUsers} = require("../utils/notificationHelper");
+const { createNotificationForAllUsers } = require("../utils/notificationHelper");
 
 const deleteCloudinaryFile = async (
     publicId,
@@ -104,21 +104,21 @@ const createResource = async (req, res) => {
             });
 
         const populatedResource =
-    await resource.populate(
-        "uploadedBy",
-        "name email profileImage department year"
-    );
+            await resource.populate(
+                "uploadedBy",
+                "name email profileImage department year"
+            );
 
-await createNotificationForAllUsers({
-    io: req.app.get("io"),
-    actorId: req.user._id,
-    type: "academic",
-    title: "New Academic Resource",
-    message: `${req.user.name || "A student"} added "${resource.title}" to Academic Resources.`,
-    link: "/academic"
-});
+        await createNotificationForAllUsers({
+            io: req.app.get("io"),
+            actorId: req.user._id,
+            type: "academic",
+            title: "New Academic Resource",
+            message: `${req.user.name || "A student"} added "${resource.title}" to Academic Resources.`,
+            link: "/academic"
+        });
 
-return res.status(201).json({
+        return res.status(201).json({
             message:
                 "Academic resource created successfully",
             resource: populatedResource
@@ -365,7 +365,7 @@ const updateResource = async (req, res) => {
             replacingCloudinaryFile =
                 oldPublicId &&
                 oldPublicId !==
-                    filePublicId.trim();
+                filePublicId.trim();
         }
 
         if (fileResourceType !== undefined) {
